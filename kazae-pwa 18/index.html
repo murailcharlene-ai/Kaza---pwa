@@ -1,514 +1,529 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kazaé">
-<meta name="theme-color" content="#5B4FCF">
-<title>Kazaé — Maison & Famille</title>
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800;900&display=swap" rel="stylesheet">
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-button,a,[onclick]{touch-action:manipulation;cursor:pointer;}
-:root{
-  --plum:#5B4FCF;--plum-d:#4338A8;--plum-l:#EEF0FF;
-  --coral:#FF6B6B;--coral-l:#FFF0F0;
-  --mint:#00B894;--mint-l:#E6FAF6;
-  --sun:#F59E0B;--sun-l:#FFF8E6;
-  --sky:#3B82F6;--sky-l:#EFF6FF;
-  --rose:#E91E63;--rose-l:#FCE4EC;
-  --dark:#1A1A2E;--mid:#4A4A6A;--soft:#9898B8;--pale:#F7F7FF;--card:#FFFFFF;
-  --safe-t:env(safe-area-inset-top,0px);
-  --safe-b:env(safe-area-inset-bottom,0px);
-  --nav-h:64px;
-}
-html{height:100%;overflow:hidden;background:#1A1A2E;}body{height:100%;overflow:hidden;background:#1A1A2E;font-family:'Nunito',sans-serif;}
-#app{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--pale);}
-
-/* ── SCREENS ── */
-.screen{display:none;flex-direction:column;width:100%;overflow:hidden;background:var(--pale);flex:1;min-height:0;}
-.screen.active{display:flex;}
-
-/* ── HEADER ── */
-.hdr{background:var(--hdr-grad,var(--plum));color:#fff;padding:calc(var(--safe-t) + 14px) 18px 14px;flex-shrink:0;}
-.hdr-row{display:flex;align-items:center;justify-content:space-between;}
-.hdr-title{font-size:20px;font-weight:900;letter-spacing:-.3px;}
-.hdr-sub{font-size:13px;opacity:.75;margin-top:2px;}
-.hdr-btn{width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;border:none;color:#fff;}
-.hdr-back{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;font-size:15px;}
-
-/* ── SCROLL ── */
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;padding-bottom:calc(var(--nav-h) + var(--safe-b) + 16px);}
-.scroll.no-pad{padding:0;}
-
-/* ── BOTTOM NAV ── */
-.bnav{height:calc(var(--nav-h) + var(--safe-b));padding-bottom:var(--safe-b);background:#fff;border-top:1px solid #E8E8F0;display:flex;align-items:stretch;flex-shrink:0;position:relative;z-index:10;}
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .15s;border:none;background:none;-webkit-appearance:none;}
-.ni-icon{font-size:22px;transition:transform .15s;}
-.ni-lbl{font-size:10px;font-weight:700;color:var(--soft);}
-.ni.act .ni-icon{transform:scale(1.15);}
-.ni.act .ni-lbl{color:var(--plum);}
-
-/* ── CARDS ── */
-.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
-.card-title{font-size:15px;font-weight:800;color:var(--dark);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
-.card-title span{font-size:13px;font-weight:600;color:var(--soft);}
-
-/* ── TASK ITEMS ── */
-.task-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F0F0F8;cursor:pointer;transition:opacity .12s;}
-.task-item:active{opacity:.6;}
-.task-item:last-child{border-bottom:none;}
-.task-cb{width:24px;height:24px;border-radius:8px;border:2.5px solid #D0D0E8;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
-.task-cb.done{background:var(--mint);border-color:var(--mint);}
-.task-cb.done::after{content:'✓';color:#fff;font-size:13px;font-weight:900;}
-.task-info{flex:1;}
-.task-title{font-size:14px;font-weight:700;color:var(--dark);transition:all .2s;}
-.task-title.done{text-decoration:line-through;color:var(--soft);}
-.task-meta{font-size:11px;color:var(--soft);margin-top:2px;}
-.task-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0;}
-
-/* ── PILLS ── */
-.pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;-webkit-overflow-scrolling:touch;}
-.pills::-webkit-scrollbar{display:none;}
-.pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border:2px solid transparent;transition:all .15s;flex-shrink:0;}
-.pill.act{background:var(--plum);color:#fff;border-color:var(--plum);}
-.pill:not(.act){background:#fff;color:var(--mid);border-color:#E0E0F0;}
-
-/* ── STAT BOXES ── */
-.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
-.stat-box{background:var(--card);border-radius:14px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);}
-.stat-n{font-size:28px;font-weight:900;color:var(--plum);}
-.stat-l{font-size:11px;font-weight:700;color:var(--soft);margin-top:2px;}
-
-/* ── PROGRESS BAR ── */
-.prog-wrap{background:#E8E8F4;border-radius:20px;height:8px;overflow:hidden;}
-.prog-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--plum),var(--mint));transition:width .4s ease;}
-
-/* ── INPUTS ── */
-.input-row{display:flex;gap:10px;margin-bottom:12px;}
-.inp{flex:1;padding:12px 14px;border:2px solid #E0E0F0;border-radius:12px;font-size:14px;font-family:'Nunito',sans-serif;font-weight:600;color:var(--dark);background:#fff;outline:none;transition:border-color .2s;}
-.inp:focus{border-color:var(--plum);}
-.btn{padding:12px 20px;border-radius:12px;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;}
-.btn-primary{background:var(--plum);color:#fff;}
-.btn-primary:active{background:var(--plum-d);}
-.btn-sm{padding:8px 14px;font-size:12px;border-radius:10px;}
-.btn-ghost{background:#F0F0F8;color:var(--mid);}
-
-/* ── TOAST ── */
-#toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-b) + 16px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none;}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-/* ── AUTH SCREEN ── */
-.auth-card{background:#fff;border-radius:20px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.1);max-width:360px;}
-.auth-title{font-size:24px;font-weight:900;color:var(--dark);margin-bottom:8px;}
-.auth-sub{font-size:14px;color:var(--soft);margin-bottom:20px;}
-.auth-input{width:100%;padding:12px 14px;border:2px solid #E0E0F0;border-radius:12px;font-size:14px;font-family:'Nunito',sans-serif;margin-bottom:12px;outline:none;}
-.auth-input:focus{border-color:var(--plum);}
-.auth-toggle{text-align:center;font-size:13px;color:var(--soft);margin-top:16px;}
-.auth-toggle a{color:var(--plum);cursor:pointer;font-weight:700;}
-
-/* ── SPLASH ── */
-#s-splash{background:linear-gradient(160deg,var(--plum-d),var(--plum),#7C6FE0);align-items:center;justify-content:center;z-index:100;}
-.splash-logo{font-family:'Baloo 2',cursive;font-size:56px;font-weight:900;color:#fff;text-align:center;animation:pop .6s ease;}
-.splash-sub{font-size:16px;color:rgba(255,255,255,.8);font-weight:700;margin-top:8px;text-align:center;}
-.splash-dots{display:flex;gap:8px;margin-top:40px;}
-.splash-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.4);}
-.splash-dot.act{background:#fff;animation:pulse 1s infinite;}
-@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-
-/* ── HOME ── */
-.welcome-card{background:linear-gradient(135deg,var(--plum),#7C6FE0);color:#fff;border-radius:20px;padding:20px;margin-bottom:16px;}
-.wc-greeting{font-size:22px;font-weight:900;margin-bottom:4px;}
-.wc-sub{font-size:13px;opacity:.8;font-weight:600;}
-.wc-prog{margin-top:16px;}
-.wc-prog-lbl{display:flex;justify-content:space-between;font-size:12px;opacity:.9;font-weight:700;margin-bottom:6px;}
-.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-.qa-btn{background:var(--card);border-radius:16px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);border:none;font-family:'Nunito',sans-serif;text-align:left;transition:transform .15s;}
-.qa-btn:active{transform:scale(.97);}
-.qa-icon{font-size:28px;}
-.qa-lbl{font-size:13px;font-weight:800;color:var(--dark);}
-.qa-sub{font-size:11px;color:var(--soft);font-weight:600;}
-
-/* ── MODAL ── */
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;}
-.modal-overlay.show{display:flex;}
-.modal-content{background:#fff;border-radius:20px;padding:20px;max-width:90%;max-height:80vh;overflow-y:auto;}
-.modal-title{font-size:18px;font-weight:900;margin-bottom:16px;}
-.modal-close{cursor:pointer;font-size:24px;font-weight:700;color:var(--soft);float:right;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kazaé">
+    <meta name="theme-color" content="#5B4FFF">
+    <title>Kazaé — Maison & Famille</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #5B4FFF 0%, #7C6EFF 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }
+        
+        /* SPLASH SCREEN */
+        .splash {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #5B4FFF 0%, #7C6EFF 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .splash-logo {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        .splash-text {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .splash.hidden {
+            display: none;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* AUTH SCREEN */
+        .auth-screen {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        
+        .auth-screen.active {
+            display: block;
+        }
+        
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .auth-logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #5B4FFF 0%, #7C6EFF 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 15px;
+        }
+        
+        .auth-logo-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .auth-subtitle {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #5B4FFF;
+            box-shadow: 0 0 0 3px rgba(91, 79, 255, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #5B4FFF 0%, #7C6EFF 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(91, 79, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #5B4FFF;
+            border: 2px solid #5B4FFF;
+        }
+        
+        .toggle-auth {
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .toggle-auth button {
+            background: none;
+            border: none;
+            color: #5B4FFF;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+        
+        .error {
+            background: #FFE0E0;
+            color: #CC0000;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        /* APP SCREEN */
+        .app-screen {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            min-height: 600px;
+        }
+        
+        .app-screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, #5B4FFF 0%, #7C6EFF 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .app-header h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .app-header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .app-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .welcome-message {
+            background: #F0F0FF;
+            border-left: 4px solid #5B4FFF;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .user-info {
+            background: #F9F9F9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .user-info .user-email {
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-logout {
+            background: #FF6B6B;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+    </style>
 </head>
 <body>
-<div id="app">
-  <!-- SPLASH -->
-  <div id="s-splash" class="screen active">
-    <div class="splash-logo">🏠</div>
-    <div class="splash-sub">Kazaé</div>
-    <div class="splash-dots">
-      <div class="splash-dot act"></div>
-      <div class="splash-dot"></div>
-      <div class="splash-dot"></div>
+    <!-- SPLASH SCREEN -->
+    <div id="splash" class="splash">
+        <div class="splash-logo">🏠</div>
+        <div class="splash-text">Kazaé</div>
     </div>
-  </div>
-
-  <!-- AUTH -->
-  <div id="s-auth" class="screen" style="align-items:center;justify-content:center;background:var(--pale);">
-    <div class="auth-card">
-      <h1 class="auth-title">Bienvenue</h1>
-      <p class="auth-sub" id="auth-sub">Créez ou connectez-vous</p>
-      <input type="email" class="auth-input" id="auth-email" placeholder="Email" />
-      <input type="password" class="auth-input" id="auth-password" placeholder="Mot de passe" />
-      <button class="btn btn-primary" style="width:100%;margin-bottom:12px;" onclick="authSubmit()" id="auth-btn">Créer un compte</button>
-      <div class="auth-toggle">
-        Déjà inscrit ? <a onclick="toggleAuthMode()">Se connecter</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- HOME -->
-  <div id="s-home" class="screen">
-    <div class="hdr">
-      <div class="hdr-row">
-        <div>
-          <div class="hdr-title">🏠 Kazaé</div>
-          <div class="hdr-sub" id="today-date">Jeudi 26 mars</div>
+    
+    <!-- AUTH SCREEN -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-logo">
+            <div class="auth-logo-icon">🏠</div>
+            <div class="auth-logo-text">Kazaé</div>
         </div>
-        <button class="hdr-btn" onclick="showLogout()">👤</button>
-      </div>
-    </div>
-    <div class="scroll">
-      <div class="welcome-card">
-        <div class="wc-greeting">Bonjour <span id="greeting-name">Charlène</span> 👋</div>
-        <div class="wc-sub" id="wc-summary">0/3 tâches faites</div>
-        <div class="wc-prog">
-          <div class="wc-prog-lbl">
-            <span>Progression du jour</span>
-            <span id="prog-pct">0%</span>
-          </div>
-          <div class="prog-wrap">
-            <div class="prog-bar" id="prog-bar" style="width:0%"></div>
-          </div>
+        <div class="auth-subtitle">Maison & Famille</div>
+        
+        <div id="errorMsg" class="error"></div>
+        
+        <!-- LOGIN FORM -->
+        <div id="loginForm">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Connexion</h2>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="votre@email.com">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" onclick="handleLogin()">Se connecter</button>
+            <div class="toggle-auth">
+                Pas de compte ? <button onclick="toggleAuth()">S'inscrire</button>
+            </div>
         </div>
-      </div>
-
-      <div class="quick-actions">
-        <button class="qa-btn" onclick="goTo('s-tasks')">
-          <div class="qa-icon">✅</div>
-          <div class="qa-lbl">Tâches</div>
-          <div class="qa-sub">À faire</div>
-        </button>
-        <button class="qa-btn" onclick="goTo('s-courses')">
-          <div class="qa-icon">🛒</div>
-          <div class="qa-lbl">Courses</div>
-          <div class="qa-sub">Liste</div>
-        </button>
-        <button class="qa-btn" onclick="goTo('s-rewards')">
-          <div class="qa-icon">⭐</div>
-          <div class="qa-lbl">Récompenses</div>
-          <div class="qa-sub">Points</div>
-        </button>
-        <button class="qa-btn" onclick="goTo('s-calendar')">
-          <div class="qa-icon">📅</div>
-          <div class="qa-lbl">Calendrier</div>
-          <div class="qa-sub">Événements</div>
-        </button>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Tâches d'aujourd'hui <span id="task-count">0</span></div>
-        <div id="today-tasks" style="font-size:13px;color:var(--soft);">Aucune tâche</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- AUTRES SCREENS (placeholder) -->
-  <div id="s-tasks" class="screen" style="display:none;">
-    <div class="hdr">
-      <div class="hdr-row">
-        <div class="hdr-back" onclick="goTo('s-home')">← Retour</div>
-        <div class="hdr-title">Tâches</div>
-        <div></div>
-      </div>
-    </div>
-    <div class="scroll">
-      <div class="card">
-        <p style="color:var(--dark);font-weight:700;">Fonctionnalité complète arrive bientôt</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="s-courses" class="screen" style="display:none;">
-    <div class="hdr">
-      <div class="hdr-row">
-        <div class="hdr-back" onclick="goTo('s-home')">← Retour</div>
-        <div class="hdr-title">Courses</div>
-        <div></div>
-      </div>
-    </div>
-    <div class="scroll">
-      <div class="card">
-        <p style="color:var(--dark);font-weight:700;">Fonctionnalité complète arrive bientôt</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="s-rewards" class="screen" style="display:none;">
-    <div class="hdr">
-      <div class="hdr-row">
-        <div class="hdr-back" onclick="goTo('s-home')">← Retour</div>
-        <div class="hdr-title">Récompenses</div>
-        <div></div>
-      </div>
-    </div>
-    <div class="scroll">
-      <div class="card">
-        <p style="color:var(--dark);font-weight:700;">Fonctionnalité complète arrive bientôt</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="s-calendar" class="screen" style="display:none;">
-    <div class="hdr">
-      <div class="hdr-row">
-        <div class="hdr-back" onclick="goTo('s-home')">← Retour</div>
-        <div class="hdr-title">Calendrier</div>
-        <div></div>
-      </div>
-    </div>
-    <div class="scroll">
-      <div class="card">
-        <p style="color:var(--dark);font-weight:700;">Fonctionnalité complète arrive bientôt</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
-<div id="modal-overlay" class="modal-overlay"></div>
-
-<script>
-// ══════════════════════════════════════
-// FIREBASE CONFIG
-// ══════════════════════════════════════
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCkNjYPaqIEEUDOEcFdBWcssShAqsXdA-Q",
-  authDomain: "kazae-44515.firebaseapp.com",
-  projectId: "kazae-44515",
-  storageBucket: "kazae-44515.firebasestorage.app",
-  messagingSenderId: "358690912309",
-  appId: "1:358690912309:web:86ed1a8129f371fd80197c"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// ══════════════════════════════════════
-// STATE
-// ══════════════════════════════════════
-
-let currentUser = null;
-let userData = null;
-let authMode = 'signup'; // signup ou login
-
-// ══════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════
-
-function toggleAuthMode() {
-  authMode = authMode === 'signup' ? 'login' : 'signup';
-  document.getElementById('auth-sub').textContent = authMode === 'signup' 
-    ? 'Créez un compte' 
-    : 'Connectez-vous';
-  document.getElementById('auth-btn').textContent = authMode === 'signup' 
-    ? 'Créer un compte' 
-    : 'Se connecter';
-}
-
-async function authSubmit() {
-  const email = document.getElementById('auth-email').value;
-  const password = document.getElementById('auth-password').value;
-
-  if (!email || !password) {
-    showToast('⚠️ Email et mot de passe requis');
-    return;
-  }
-
-  try {
-    if (authMode === 'signup') {
-      await auth.createUserWithEmailAndPassword(email, password);
-      showToast('✅ Compte créé !');
-    } else {
-      await auth.signInWithEmailAndPassword(email, password);
-      showToast('✅ Connecté !');
-    }
-  } catch(e) {
-    showToast('❌ ' + e.message);
-  }
-}
-
-function showLogout() {
-  if (confirm('Déconnexion ?')) {
-    auth.signOut();
-  }
-}
-
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    currentUser = user;
-    
-    // Charger ou créer les données utilisateur
-    const userRef = db.collection('users').doc(user.uid);
-    const userSnap = await userRef.get();
-    
-    if (!userSnap.exists) {
-      // Créer les données par défaut
-      const defaultData = {
-        name: user.email.split('@')[0],
-        tasks: [],
-        courses: [],
-        rewards: [],
-        coins: 0,
-        points: 0,
-        createdAt: new Date()
-      };
-      await userRef.set(defaultData);
-      userData = defaultData;
-    } else {
-      userData = userSnap.data();
-    }
-    
-    // Écouter les changements en temps réel
-    userRef.onSnapshot((snap) => {
-      userData = snap.data();
-      renderHome();
-    });
-    
-    goTo('s-home');
-    renderHome();
-  } else {
-    currentUser = null;
-    userData = null;
-    goTo('s-auth');
-  }
-});
-
-// ══════════════════════════════════════
-// UI
-// ══════════════════════════════════════
-
-function goTo(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
-}
-
-function showModal(content) {
-  const overlay = document.getElementById('modal-overlay');
-  overlay.innerHTML = `<div class="modal-content">${content}</div>`;
-  overlay.classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('show');
-}
-
-// ══════════════════════════════════════
-// RENDER
-// ══════════════════════════════════════
-
-function renderHome() {
-  if (!userData) return;
-
-  const name = userData.name || 'Ami';
-  document.getElementById('greeting-name').textContent = name;
-
-  const tasks = userData.tasks || [];
-  const completedCount = tasks.filter(t => t.done).length;
-  const totalCount = tasks.length;
-  
-  document.getElementById('wc-summary').textContent = `${completedCount}/${totalCount} tâches faites`;
-  document.getElementById('task-count').textContent = totalCount;
-  
-  const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  document.getElementById('prog-pct').textContent = pct + '%';
-  document.getElementById('prog-bar').style.width = pct + '%';
-
-  // Tâches d'aujourd'hui
-  const today = new Date().toISOString().split('T')[0];
-  const todayTasks = tasks.filter(t => t.dueDate === today);
-  
-  if (todayTasks.length === 0) {
-    document.getElementById('today-tasks').innerHTML = '<p style="color:var(--soft);">Aucune tâche aujourd\'hui</p>';
-  } else {
-    document.getElementById('today-tasks').innerHTML = todayTasks
-      .map(t => `
-        <div class="task-item" onclick="toggleTask('${t.id}')">
-          <div class="task-cb ${t.done ? 'done' : ''}"></div>
-          <div class="task-info">
-            <div class="task-title ${t.done ? 'done' : ''}">${t.title}</div>
-            <div class="task-meta">${t.assignedTo || 'Non assignée'}</div>
-          </div>
+        
+        <!-- SIGNUP FORM -->
+        <div id="signupForm" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Création de compte</h2>
+            <div class="form-group">
+                <label>Prénom</label>
+                <input type="text" id="signupName" placeholder="Charlène">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="signupEmail" placeholder="votre@email.com">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="signupPassword" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>Confirmer mot de passe</label>
+                <input type="password" id="signupPasswordConfirm" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" onclick="handleSignup()">Créer un compte</button>
+            <div class="toggle-auth">
+                Déjà inscrit ? <button onclick="toggleAuth()">Se connecter</button>
+            </div>
         </div>
-      `).join('');
-  }
-
-  // Formater date d'aujourd'hui
-  const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-  const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-  const now = new Date();
-  const dayName = days[now.getDay()];
-  const monthName = months[now.getMonth()];
-  document.getElementById('today-date').textContent = `${dayName} ${now.getDate()} ${monthName}`;
-}
-
-async function toggleTask(taskId) {
-  if (!currentUser || !userData) return;
-
-  const tasks = userData.tasks || [];
-  const task = tasks.find(t => t.id === taskId);
-  
-  if (task) {
-    task.done = !task.done;
+    </div>
     
-    // Sauvegarder dans Firestore
-    await db.collection('users').doc(currentUser.uid).update({
-      tasks: tasks
-    });
-    
-    showToast(task.done ? '✅ Tâche complétée !' : '⏳ Tâche réactivée');
-  }
-}
+    <!-- APP SCREEN -->
+    <div id="appScreen" class="app-screen">
+        <div class="app-header">
+            <h1>Kazaé</h1>
+            <p id="userGreeting">Bienvenue</p>
+        </div>
+        <div class="app-content">
+            <div class="welcome-message">
+                ✨ Firebase synchronisé et actif !
+            </div>
+            <div class="user-info">
+                <div class="user-email" id="displayEmail"></div>
+                <button class="btn-logout" onclick="handleLogout()">Se déconnecter</button>
+            </div>
+            <div class="loading">
+                Application chargée avec succès ! 🎉
+            </div>
+        </div>
+    </div>
 
-// ══════════════════════════════════════
-// INIT
-// ══════════════════════════════════════
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
 
-setTimeout(() => {
-  goTo('s-auth');
-}, 2000);
+    <script>
+        // ===== FIREBASE CONFIG =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkNjYPaqIEEUDOEcFdBWcssShAqsXdA-Q",
+            authDomain: "kazae-44515.firebaseapp.com",
+            projectId: "kazae-44515",
+            storageBucket: "kazae-44515.firebasestorage.app",
+            messagingSenderId: "358690912309",
+            appId: "1:358690912309:web:86ed1a8129f371fd80197c"
+        };
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-</script>
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ===== STATE =====
+        let currentUser = null;
+        let authMode = 'login'; // 'login' or 'signup'
+
+        // ===== INIT =====
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('splash').classList.add('hidden');
+                document.getElementById('authScreen').classList.add('active');
+            }, 2000);
+            
+            // Check if user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    showAppScreen();
+                }
+            });
+        });
+
+        // ===== AUTH FUNCTIONS =====
+        function toggleAuth() {
+            authMode = authMode === 'login' ? 'signup' : 'login';
+            document.getElementById('loginForm').style.display = authMode === 'login' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = authMode === 'signup' ? 'block' : 'none';
+            clearError();
+        }
+
+        function showError(msg) {
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.textContent = msg;
+            errorEl.classList.add('show');
+        }
+
+        function clearError() {
+            document.getElementById('errorMsg').classList.remove('show');
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showError('Veuillez remplir tous les champs');
+                return;
+            }
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                currentUser = auth.currentUser;
+                showAppScreen();
+            } catch (error) {
+                let msg = 'Erreur de connexion';
+                if (error.code === 'auth/user-not-found') msg = 'Email non trouvé';
+                if (error.code === 'auth/wrong-password') msg = 'Mot de passe incorrect';
+                showError(msg);
+            }
+        }
+
+        async function handleSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupPasswordConfirm').value;
+            
+            if (!name || !email || !password || !confirmPassword) {
+                showError('Veuillez remplir tous les champs');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('Les mots de passe ne correspondent pas');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showError('Le mot de passe doit faire au moins 6 caractères');
+                return;
+            }
+            
+            try {
+                const result = await auth.createUserWithEmailAndPassword(email, password);
+                currentUser = result.user;
+                
+                // Create user profile in Firestore
+                await db.collection('users').doc(currentUser.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: new Date(),
+                    tasks: [],
+                    members: []
+                });
+                
+                showAppScreen();
+            } catch (error) {
+                let msg = 'Erreur lors de la création';
+                if (error.code === 'auth/email-already-in-use') msg = 'Email déjà utilisé';
+                if (error.code === 'auth/invalid-email') msg = 'Email invalide';
+                showError(msg);
+            }
+        }
+
+        function handleLogout() {
+            auth.signOut();
+            currentUser = null;
+            document.getElementById('appScreen').classList.remove('active');
+            document.getElementById('authScreen').classList.add('active');
+            
+            // Reset forms
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('signupName').value = '';
+            document.getElementById('signupEmail').value = '';
+            document.getElementById('signupPassword').value = '';
+            document.getElementById('signupPasswordConfirm').value = '';
+            
+            authMode = 'login';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+            clearError();
+        }
+
+        function showAppScreen() {
+            document.getElementById('authScreen').classList.remove('active');
+            document.getElementById('appScreen').classList.add('active');
+            
+            if (currentUser && currentUser.email) {
+                document.getElementById('userGreeting').textContent = 'Bonjour ' + (currentUser.displayName || currentUser.email.split('@')[0]) + ' ! 👋';
+                document.getElementById('displayEmail').textContent = 'Email : ' + currentUser.email;
+            }
+        }
+    </script>
+
+    <script>
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
 </body>
 </html>
-// v1.1 Firebase ready
