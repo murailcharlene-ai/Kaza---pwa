@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kazaé Firebase DEBUG</title>
+    <title>Kazaé Firebase</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -110,19 +110,6 @@
             font-size: 14px;
         }
         .error.show { display: block; }
-        
-        /* DEBUG */
-        .debug {
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #333;
-            margin-bottom: 20px;
-            max-height: 100px;
-            overflow-y: auto;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
@@ -138,11 +125,10 @@
             <h2>Connexion Firebase</h2>
             
             <div id="errorMsg" class="error"></div>
-            <div id="debugMsg" class="debug" style="display:none;"></div>
             
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" id="inputEmail" placeholder="test@test.com">
+                <input type="email" id="inputEmail" placeholder="test@example.com">
             </div>
             
             <div class="form-group">
@@ -169,148 +155,115 @@
 
     <!-- MAIN SCRIPT -->
     <script>
-        console.log("Script démarré");
-        addDebug("✓ Script démarré");
-        
-        // Hide splash after 2 seconds
-        setTimeout(function() {
-            console.log("Masquage du splash screen");
-            document.getElementById('splash').classList.add('hidden');
-        }, 2000);
+        // Attendre que Firebase SDK soit chargé
+        function initApp() {
+            // SPLASH SCREEN TIMER - Doit s'exécuter dès que possible
+            setTimeout(function() {
+                const splash = document.getElementById('splash');
+                if (splash) {
+                    splash.classList.add('hidden');
+                }
+            }, 2000);
 
-        // FIREBASE INIT
-        const firebaseConfig = {
-            apiKey: "AIzaSyCkNjYPaqIEEUDOEcFdBWcssShAqsXdA-Q",
-            authDomain: "kazae-44515.firebaseapp.com",
-            projectId: "kazae-44515",
-            storageBucket: "kazae-44515.firebasestorage.app",
-            messagingSenderId: "358690912309",
-            appId: "1:358690912309:web:86ed1a8129f371fd80197c"
-        };
+            // FIREBASE CONFIG
+            const firebaseConfig = {
+                apiKey: "AIzaSyCkNjYPaqIEEUDOEcFdBWcssShAqsXdA-Q",
+                authDomain: "kazae-44515.firebaseapp.com",
+                projectId: "kazae-44515",
+                storageBucket: "kazae-44515.firebasestorage.app",
+                messagingSenderId: "358690912309",
+                appId: "1:358690912309:web:86ed1a8129f371fd80197c"
+            };
 
-        try {
-            console.log("Initialisation Firebase...");
-            addDebug("⏳ Init Firebase...");
             firebase.initializeApp(firebaseConfig);
-            console.log("Firebase initialisé ✓");
-            addDebug("✓ Firebase OK");
-        } catch (e) {
-            console.log("Erreur Firebase:", e);
-            addDebug("✗ Erreur Firebase: " + e.message);
-        }
+            const auth = firebase.auth();
 
-        const auth = firebase.auth();
+            // LOGIN FUNCTION
+            window.handleLogin = function() {
+                const email = document.getElementById('inputEmail').value.trim();
+                const password = document.getElementById('inputPassword').value;
 
-        // LOGIN FUNCTION
-        function handleLogin() {
-            console.log("handleLogin appelée");
-            addDebug("⏳ Connexion...");
-            
-            const email = document.getElementById('inputEmail').value.trim();
-            const password = document.getElementById('inputPassword').value;
+                if (!email || !password) {
+                    showError('Veuillez remplir tous les champs');
+                    return;
+                }
 
-            console.log("Email:", email);
-            console.log("Password length:", password.length);
-            addDebug("Email: " + email);
-
-            if (!email || !password) {
-                showError('Veuillez remplir tous les champs');
-                return;
-            }
-
-            try {
                 auth.signInWithEmailAndPassword(email, password)
                     .then(function(result) {
-                        console.log('Login success:', result.user.email);
-                        addDebug("✓ Connexion OK");
                         showAuthScreen(false);
                         displayUserEmail(email);
                     })
                     .catch(function(error) {
-                        console.log('Login error:', error.code, error.message);
-                        addDebug("✗ Erreur: " + error.message);
-                        showError('Erreur: ' + error.message);
+                        showError('Email ou mot de passe incorrect');
                     });
-            } catch (e) {
-                console.log("Exception:", e);
-                addDebug("✗ Exception: " + e.message);
-            }
-        }
+            };
 
-        // LOGOUT FUNCTION
-        function handleLogout() {
-            auth.signOut()
-                .then(function() {
-                    console.log('Logout success');
+            // LOGOUT FUNCTION
+            window.handleLogout = function() {
+                auth.signOut()
+                    .then(function() {
+                        showAuthScreen(true);
+                        clearForm();
+                    })
+                    .catch(function(error) {
+                        console.log('Logout error:', error);
+                    });
+            };
+
+            // UI FUNCTIONS
+            function showAuthScreen(show) {
+                const authContainer = document.getElementById('authScreenContainer');
+                const appContainer = document.getElementById('appScreenContainer');
+                
+                if (show) {
+                    if (authContainer) authContainer.classList.add('active');
+                    if (appContainer) appContainer.classList.remove('active');
+                } else {
+                    if (authContainer) authContainer.classList.remove('active');
+                    if (appContainer) appContainer.classList.add('active');
+                }
+            }
+
+            function displayUserEmail(email) {
+                const emailDisplay = document.getElementById('userEmailDisplay');
+                if (emailDisplay) {
+                    emailDisplay.textContent = 'Email: ' + email;
+                }
+            }
+
+            function showError(message) {
+                const errorEl = document.getElementById('errorMsg');
+                if (errorEl) {
+                    errorEl.textContent = message;
+                    errorEl.classList.add('show');
+                    setTimeout(function() {
+                        errorEl.classList.remove('show');
+                    }, 5000);
+                }
+            }
+
+            function clearForm() {
+                document.getElementById('inputEmail').value = '';
+                document.getElementById('inputPassword').value = '';
+            }
+
+            // AUTH STATE LISTENER
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    showAuthScreen(false);
+                    displayUserEmail(user.email);
+                } else {
                     showAuthScreen(true);
-                    clearForm();
-                })
-                .catch(function(error) {
-                    console.log('Logout error:', error);
-                });
+                }
+            });
         }
 
-        // UI FUNCTIONS
-        function showAuthScreen(show) {
-            const authContainer = document.getElementById('authScreenContainer');
-            const appContainer = document.getElementById('appScreenContainer');
-            
-            if (show) {
-                if (authContainer) authContainer.classList.add('active');
-                if (appContainer) appContainer.classList.remove('active');
-            } else {
-                if (authContainer) authContainer.classList.remove('active');
-                if (appContainer) appContainer.classList.add('active');
-            }
+        // Lancer l'app quand le DOM est prêt
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
         }
-
-        function displayUserEmail(email) {
-            const emailDisplay = document.getElementById('userEmailDisplay');
-            if (emailDisplay) {
-                emailDisplay.textContent = 'Email: ' + email;
-            }
-        }
-
-        function showError(message) {
-            const errorEl = document.getElementById('errorMsg');
-            if (errorEl) {
-                errorEl.textContent = message;
-                errorEl.classList.add('show');
-                setTimeout(function() {
-                    errorEl.classList.remove('show');
-                }, 5000);
-            }
-        }
-
-        function clearForm() {
-            document.getElementById('inputEmail').value = '';
-            document.getElementById('inputPassword').value = '';
-        }
-
-        function addDebug(msg) {
-            const debugEl = document.getElementById('debugMsg');
-            if (debugEl) {
-                debugEl.style.display = 'block';
-                debugEl.textContent += msg + '\n';
-            }
-        }
-
-        // AUTH STATE LISTENER
-        auth.onAuthStateChanged(function(user) {
-            if (user) {
-                console.log('User logged in:', user.email);
-                addDebug("✓ User: " + user.email);
-                showAuthScreen(false);
-                displayUserEmail(user.email);
-            } else {
-                console.log('User logged out');
-                addDebug("Log out détecté");
-                showAuthScreen(true);
-            }
-        });
-
-        console.log("Setup complet");
-        addDebug("✓ Setup complet");
     </script>
 </body>
 </html>
