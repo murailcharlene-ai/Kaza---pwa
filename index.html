@@ -155,110 +155,115 @@
 
     <!-- MAIN SCRIPT -->
     <script>
-        // ========== FIREBASE INIT ==========
-        const firebaseConfig = {
-            apiKey: "AIzaSyCkNjYPaqIEEUDOEcFdBWcssShAqsXdA-Q",
-            authDomain: "kazae-44515.firebaseapp.com",
-            projectId: "kazae-44515",
-            storageBucket: "kazae-44515.firebasestorage.app",
-            messagingSenderId: "358690912309",
-            appId: "1:358690912309:web:86ed1a8129f371fd80197c"
-        };
+        // Attendre que Firebase SDK soit chargé
+        function initApp() {
+            // SPLASH SCREEN TIMER - Doit s'exécuter dès que possible
+            setTimeout(function() {
+                const splash = document.getElementById('splash');
+                if (splash) {
+                    splash.classList.add('hidden');
+                }
+            }, 2000);
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+            // FIREBASE CONFIG
+            const firebaseConfig = {
+                apiKey: "AIzaSyCkNjYPaqIEEUDOEcFdBWcssShAqsXdA-Q",
+                authDomain: "kazae-44515.firebaseapp.com",
+                projectId: "kazae-44515",
+                storageBucket: "kazae-44515.firebasestorage.app",
+                messagingSenderId: "358690912309",
+                appId: "1:358690912309:web:86ed1a8129f371fd80197c"
+            };
 
-        // ========== SPLASH SCREEN TIMER ==========
-        window.setTimeout(function() {
-            const splash = document.getElementById('splash');
-            if (splash) {
-                splash.classList.add('hidden');
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+
+            // LOGIN FUNCTION
+            window.handleLogin = function() {
+                const email = document.getElementById('inputEmail').value.trim();
+                const password = document.getElementById('inputPassword').value;
+
+                if (!email || !password) {
+                    showError('Veuillez remplir tous les champs');
+                    return;
+                }
+
+                auth.signInWithEmailAndPassword(email, password)
+                    .then(function(result) {
+                        showAuthScreen(false);
+                        displayUserEmail(email);
+                    })
+                    .catch(function(error) {
+                        showError('Email ou mot de passe incorrect');
+                    });
+            };
+
+            // LOGOUT FUNCTION
+            window.handleLogout = function() {
+                auth.signOut()
+                    .then(function() {
+                        showAuthScreen(true);
+                        clearForm();
+                    })
+                    .catch(function(error) {
+                        console.log('Logout error:', error);
+                    });
+            };
+
+            // UI FUNCTIONS
+            function showAuthScreen(show) {
+                const authContainer = document.getElementById('authScreenContainer');
+                const appContainer = document.getElementById('appScreenContainer');
+                
+                if (show) {
+                    if (authContainer) authContainer.classList.add('active');
+                    if (appContainer) appContainer.classList.remove('active');
+                } else {
+                    if (authContainer) authContainer.classList.remove('active');
+                    if (appContainer) appContainer.classList.add('active');
+                }
             }
-        }, 2000);
 
-        // ========== LOGIN FUNCTION ==========
-        function handleLogin() {
-            const email = document.getElementById('inputEmail').value.trim();
-            const password = document.getElementById('inputPassword').value;
-
-            if (!email || !password) {
-                showError('Veuillez remplir tous les champs');
-                return;
+            function displayUserEmail(email) {
+                const emailDisplay = document.getElementById('userEmailDisplay');
+                if (emailDisplay) {
+                    emailDisplay.textContent = 'Email: ' + email;
+                }
             }
 
-            auth.signInWithEmailAndPassword(email, password)
-                .then(function(result) {
-                    console.log('Login success:', result.user.email);
+            function showError(message) {
+                const errorEl = document.getElementById('errorMsg');
+                if (errorEl) {
+                    errorEl.textContent = message;
+                    errorEl.classList.add('show');
+                    setTimeout(function() {
+                        errorEl.classList.remove('show');
+                    }, 5000);
+                }
+            }
+
+            function clearForm() {
+                document.getElementById('inputEmail').value = '';
+                document.getElementById('inputPassword').value = '';
+            }
+
+            // AUTH STATE LISTENER
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
                     showAuthScreen(false);
-                    displayUserEmail(email);
-                })
-                .catch(function(error) {
-                    console.log('Login error:', error.code);
-                    showError('Email ou mot de passe incorrect');
-                });
-        }
-
-        // ========== LOGOUT FUNCTION ==========
-        function handleLogout() {
-            auth.signOut()
-                .then(function() {
-                    console.log('Logout success');
+                    displayUserEmail(user.email);
+                } else {
                     showAuthScreen(true);
-                    clearForm();
-                })
-                .catch(function(error) {
-                    console.log('Logout error:', error);
-                });
+                }
+            });
         }
 
-        // ========== UI FUNCTIONS ==========
-        function showAuthScreen(show) {
-            const authContainer = document.getElementById('authScreenContainer');
-            const appContainer = document.getElementById('appScreenContainer');
-            
-            if (show) {
-                if (authContainer) authContainer.classList.add('active');
-                if (appContainer) appContainer.classList.remove('active');
-            } else {
-                if (authContainer) authContainer.classList.remove('active');
-                if (appContainer) appContainer.classList.add('active');
-            }
+        // Lancer l'app quand le DOM est prêt
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
         }
-
-        function displayUserEmail(email) {
-            const emailDisplay = document.getElementById('userEmailDisplay');
-            if (emailDisplay) {
-                emailDisplay.textContent = 'Email: ' + email;
-            }
-        }
-
-        function showError(message) {
-            const errorEl = document.getElementById('errorMsg');
-            if (errorEl) {
-                errorEl.textContent = message;
-                errorEl.classList.add('show');
-                setTimeout(function() {
-                    errorEl.classList.remove('show');
-                }, 5000);
-            }
-        }
-
-        function clearForm() {
-            document.getElementById('inputEmail').value = '';
-            document.getElementById('inputPassword').value = '';
-        }
-
-        // ========== AUTH STATE LISTENER ==========
-        auth.onAuthStateChanged(function(user) {
-            if (user) {
-                console.log('User logged in:', user.email);
-                showAuthScreen(false);
-                displayUserEmail(user.email);
-            } else {
-                console.log('User logged out');
-                showAuthScreen(true);
-            }
-        });
     </script>
 </body>
 </html>
