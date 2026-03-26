@@ -6,82 +6,188 @@
     <title>Kazaé</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #5B4FFF, #7C6EFF); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #5B4FFF, #7C6EFF); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
-        #splash.hide { display: none !important; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #5B4FFF, #7C6EFF);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        #splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #5B4FFF, #7C6EFF);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        #splash.hide {
+            display: none !important;
+        }
         .icon { font-size: 100px; margin-bottom: 20px; }
         .text { color: white; font-size: 36px; font-weight: bold; }
-        .container { background: white; border-radius: 20px; padding: 40px 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 420px; width: 100%; display: none; }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 420px;
+            width: 100%;
+            display: none;
+        }
         .container.show { display: block; }
         h1 { text-align: center; color: #333; margin-bottom: 30px; font-size: 24px; }
         .form-group { margin-bottom: 20px; }
         label { display: block; color: #333; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
-        input { width: 100%; padding: 12px 15px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 16px; }
-        input:focus { outline: none; border-color: #5B4FFF; box-shadow: 0 0 0 3px rgba(91, 79, 255, 0.1); }
-        button { width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; background: linear-gradient(135deg, #5B4FFF, #7C6EFF); color: white; cursor: pointer; }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #5B4FFF;
+            box-shadow: 0 0 0 3px rgba(91, 79, 255, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #5B4FFF, #7C6EFF);
+            color: white;
+            cursor: pointer;
+        }
         button:hover { transform: translateY(-2px); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .logout { background: #FF6B6B; margin-top: 20px; }
-        .error { background: #FFE0E0; color: #CC0000; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: none; font-size: 14px; }
+        .error {
+            background: #FFE0E0;
+            color: #CC0000;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
         .error.show { display: block; }
         .user-display { text-align: center; color: #666; margin-bottom: 30px; font-size: 16px; }
     </style>
 </head>
 <body>
-    <div id="splash"><div class="icon">🏠</div><div class="text">Kazaé</div></div>
-    <div id="auth" class="container show"><h1>Connexion</h1><div id="errorMsg" class="error"></div><div class="form-group"><label>Email</label><input type="email" id="emailInput" placeholder="test@test.com"></div><div class="form-group"><label>Mot de passe</label><input type="password" id="passwordInput" placeholder="123456"></div><button id="loginBtn">Se connecter</button></div>
-    <div id="app" class="container"><h1>Kazaé ✅</h1><div class="user-display" id="userDisplay"></div><button class="logout" id="logoutBtn">Se déconnecter</button></div>
+    <div id="splash">
+        <div class="icon">🏠</div>
+        <div class="text">Kazaé</div>
+    </div>
     
+    <div id="auth" class="container show">
+        <h1>Connexion</h1>
+        <div id="errorMsg" class="error"></div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="emailInput" placeholder="test@test.com">
+        </div>
+        <div class="form-group">
+            <label>Mot de passe</label>
+            <input type="password" id="passwordInput" placeholder="123456">
+        </div>
+        <button id="loginBtn">Se connecter</button>
+    </div>
+    
+    <div id="app" class="container">
+        <h1>Kazaé ✅</h1>
+        <div class="user-display" id="userDisplay"></div>
+        <button class="logout" id="logoutBtn">Se déconnecter</button>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <script>
-        document.getElementById('splash').classList.add('hide');
-        
         let supabase = null;
-        
+
+        // SPLASH DISPARAÎT IMMÉDIATEMENT
+        setTimeout(function() {
+            document.getElementById('splash').classList.add('hide');
+        }, 500);
+
+        // INITIALISER SUPABASE
         function initSupabase() {
             if (typeof window.supabase === 'undefined') {
                 setTimeout(initSupabase, 100);
                 return;
             }
-            supabase = window.supabase.createClient('https://aspmfjmkwzwytiknqlih.supabase.co', 'sb_publishable_hH3MLBYsjKjM6KkQYpxjpQ_GWqIJtSQ');
+            
+            supabase = window.supabase.createClient(
+                'https://aspmfjmkwzwytiknqlih.supabase.co',
+                'sb_publishable_hH3MLBYsjKjM6KkQYpxjpQ_GWqIJtSQ'
+            );
+            
+            console.log('Supabase ready');
         }
-        
-        document.getElementById('loginBtn').onclick = function() {
-            if (!supabase) { alert('App not ready'); return; }
+
+        // BOUTONS
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            if (!supabase) {
+                alert('App not ready');
+                return;
+            }
+
             var email = document.getElementById('emailInput').value.trim();
             var password = document.getElementById('passwordInput').value;
-            if (!email || !password) { alert('Remplis tous les champs'); return; }
-            var btn = this;
-            btn.disabled = true;
-            btn.textContent = 'Connexion...';
-            supabase.auth.signInWithPassword({ email: email, password: password }).then(function(result) {
-                btn.disabled = false;
-                btn.textContent = 'Se connecter';
-                if (result.error) { alert('Email ou mot de passe incorrect'); } 
-                else { 
-                    document.getElementById('auth').classList.remove('show');
-                    document.getElementById('app').classList.add('show');
-                    document.getElementById('userDisplay').textContent = 'Email: ' + email;
-                }
-            }).catch(function(error) {
-                btn.disabled = false;
-                btn.textContent = 'Se connecter';
-                alert('Erreur: ' + error.message);
-            });
-        };
-        
-        document.getElementById('logoutBtn').onclick = function() {
+
+            if (!email || !password) {
+                alert('Remplis tous les champs');
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = 'Connexion...';
+
+            supabase.auth.signInWithPassword({ email: email, password: password })
+                .then(function(result) {
+                    document.getElementById('loginBtn').disabled = false;
+                    document.getElementById('loginBtn').textContent = 'Se connecter';
+
+                    if (result.error) {
+                        alert('Email ou mot de passe incorrect');
+                    } else {
+                        document.getElementById('auth').classList.remove('show');
+                        document.getElementById('app').classList.add('show');
+                        document.getElementById('userDisplay').textContent = 'Email: ' + email;
+                    }
+                })
+                .catch(function(error) {
+                    document.getElementById('loginBtn').disabled = false;
+                    document.getElementById('loginBtn').textContent = 'Se connecter';
+                    alert('Erreur: ' + error.message);
+                });
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
             if (!supabase) return;
+
             supabase.auth.signOut().then(function() {
                 document.getElementById('auth').classList.add('show');
                 document.getElementById('app').classList.remove('show');
                 document.getElementById('emailInput').value = '';
                 document.getElementById('passwordInput').value = '';
             });
-        };
-        
-        setTimeout(initSupabase, 100);
+        });
+
+        // LANCER L'INIT
+        initSupabase();
     </script>
 </body>
 </html>
