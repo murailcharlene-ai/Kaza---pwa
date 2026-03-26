@@ -12,7 +12,7 @@
             min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
         }
         #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #5B4FFF, #7C6EFF); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
-        #splash.hide { display: none; }
+        #splash.hide { display: none !important; }
         .icon { font-size: 100px; margin-bottom: 20px; }
         .text { color: white; font-size: 36px; font-weight: bold; }
         .container { background: white; border-radius: 20px; padding: 40px 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 420px; width: 100%; display: none; }
@@ -57,6 +57,10 @@
         <button class="logout" id="logoutBtn">Se déconnecter</button>
     </div>
     
+    <script>
+        document.getElementById('splash').classList.add('hide');
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
@@ -64,20 +68,15 @@
         
         function initApp() {
             if (typeof window.supabase === 'undefined') {
-                console.log('Supabase SDK not loaded yet');
                 setTimeout(initApp, 200);
                 return;
             }
-            
-            console.log('Supabase SDK loaded, initializing...');
             
             try {
                 supabase = window.supabase.createClient(
                     'https://aspmfjmkwzwytiknqlih.supabase.co',
                     'sb_publishable_hH3MLBYsjKjM6KkQYpxjpQ_GWqIJtSQ'
                 );
-                
-                console.log('Supabase initialized');
                 
                 document.getElementById('loginBtn').addEventListener('click', handleLogin);
                 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
@@ -89,14 +88,9 @@
                 });
                 
             } catch(e) {
-                console.error('Error:', e);
-                showError('Erreur d\'initialisation');
+                showError('Erreur');
             }
         }
-        
-        setTimeout(function() {
-            document.getElementById('splash').classList.add('hide');
-        }, 2000);
         
         function handleLogin() {
             if (!supabase) {
@@ -107,68 +101,4 @@
             var email = document.getElementById('emailInput').value.trim();
             var password = document.getElementById('passwordInput').value;
             
-            if (!email || !password) {
-                showError('Remplis tous les champs');
-                return;
-            }
-            
-            var btn = document.getElementById('loginBtn');
-            btn.disabled = true;
-            btn.textContent = 'Connexion...';
-            
-            supabase.auth.signInWithPassword({ email: email, password: password })
-                .then(function(result) {
-                    btn.disabled = false;
-                    btn.textContent = 'Se connecter';
-                    
-                    if (result.error) {
-                        showError('Email ou mot de passe incorrect');
-                    } else {
-                        showApp(email);
-                    }
-                })
-                .catch(function(error) {
-                    btn.disabled = false;
-                    btn.textContent = 'Se connecter';
-                    showError('Erreur: ' + error.message);
-                });
-        }
-        
-        function handleLogout() {
-            if (!supabase) return;
-            
-            supabase.auth.signOut().then(function() {
-                showAuth();
-                document.getElementById('emailInput').value = '';
-                document.getElementById('passwordInput').value = '';
-            });
-        }
-        
-        function showAuth() {
-            document.getElementById('auth').classList.add('show');
-            document.getElementById('app').classList.remove('show');
-        }
-        
-        function showApp(email) {
-            document.getElementById('auth').classList.remove('show');
-            document.getElementById('app').classList.add('show');
-            document.getElementById('userDisplay').textContent = 'Email: ' + email;
-        }
-        
-        function showError(msg) {
-            var el = document.getElementById('errorMsg');
-            el.textContent = msg;
-            el.classList.add('show');
-            setTimeout(function() {
-                el.classList.remove('show');
-            }, 5000);
-        }
-        
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initApp);
-        } else {
-            initApp();
-        }
-    </script>
-</body>
-</html>
+            if (!email || !p
