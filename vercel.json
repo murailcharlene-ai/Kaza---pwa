@@ -1,3 +1,4 @@
 {
-  "rootDirectory": "kazae-pwa"
+  "buildCommand": "true",
+  "outputDirectory": "kazae-pwa 18"
 }
