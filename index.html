@@ -6,7 +6,21 @@
     <meta name="theme-color" content="#5B4FFF">
     <title>Kazaé</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#5B4FFF,#7C6EFF);min-height:100vh;display:flex;justify-content:center;align-items:center}.splash{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:100vh;background:linear-gradient(135deg,#5B4FFF,#7C6EFF);position:fixed;top:0;left:0;right:0;z-index:1000}.splash-logo{width:100px;height:100px;background:#fff;border-radius:30px;display:flex;align-items:center;justify-content:center;font-size:50px;margin-bottom:20px;animation:bounce 2s infinite}.splash-text{color:#fff;font-size:24px;font-weight:bold}.splash.hidden{display:none}@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}.auth-screen{display:none;background:#fff;border-radius:20px;padding:30px 20px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-width:480px;margin:20px}.auth-screen.active{display:block}.auth-logo{text-align:center;margin-bottom:30px}.auth-logo-icon{width:80px;height:80px;background:linear-gradient(135deg,#5B4FFF,#7C6EFF);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 15px}.auth-logo-text{font-size:22px;font-weight:bold;color:#333}.form-group{margin-bottom:15px}.form-group label{display:block;font-size:14px;font-weight:600;color:#333;margin-bottom:8px}.form-group input{width:100%;padding:12px 15px;border:1px solid #E0E0E0;border-radius:10px;font-size:16px}.form-group input:focus{outline:0;border-color:#5B4FFF;box-shadow:0 0 0 3px rgba(91,79,255,.1)}.btn{width:100%;padding:14px;border:0;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;margin-top:10px}.btn-primary{background:linear-gradient(135deg,#5B4FFF,#7C6EFF);color:#fff}.error{background:#FFE0E0;color:#CC0000;padding:12px;border-radius:8px;margin-bottom:20px;display:none}.error.show{display:block}.app-screen{display:none;background:#fff;border-radius:20px;padding:0;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);max-width:480px;margin:20px}.app-screen.active{display:block}.app-header{background:linear-gradient(135deg,#5B4FFF,#7C6EFF);color:#fff;padding:20px;text-align:center}.app-content{padding:20px}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #5B4FFF, #7C6EFF); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .splash { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #5B4FFF, #7C6EFF); position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        .splash-logo { width: 100px; height: 100px; background: white; border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 50px; margin-bottom: 20px; }
+        .splash-text { color: white; font-size: 24px; font-weight: bold; }
+        .splash.hidden { display: none; }
+        .auth-screen { display: none; background: white; border-radius: 20px; padding: 30px 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); max-width: 480px; margin: 20px; }
+        .auth-screen.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 10px; font-size: 16px; }
+        .btn { width: 100%; padding: 14px; border: 0; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; background: linear-gradient(135deg, #5B4FFF, #7C6EFF); color: white; }
+        .app-screen { display: none; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); max-width: 480px; margin: 20px; }
+        .app-screen.active { display: block; }
+        .app-header { background: linear-gradient(135deg, #5B4FFF, #7C6EFF); color: white; padding: 20px; border-radius: 20px 20px 0 0; margin: -30px -30px 20px -30px; }
     </style>
 </head>
 <body>
@@ -16,23 +30,16 @@
     </div>
     
     <div id="authScreen" class="auth-screen">
-        <div class="auth-logo">
-            <div class="auth-logo-icon">🏠</div>
-            <div class="auth-logo-text">Kazaé</div>
+        <h2 style="text-align: center; margin-bottom: 20px;">Connexion Firebase</h2>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="loginEmail" placeholder="test@example.com">
         </div>
-        <div id="errorMsg" class="error"></div>
-        <div id="loginForm">
-            <h2 style="text-align:center;margin-bottom:20px">Connexion</h2>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="loginEmail" placeholder="votre@email.com">
-            </div>
-            <div class="form-group">
-                <label>Mot de passe</label>
-                <input type="password" id="loginPassword" placeholder="••••••••">
-            </div>
-            <button class="btn btn-primary" onclick="handleLogin()">Se connecter</button>
+        <div class="form-group">
+            <label>Mot de passe</label>
+            <input type="password" id="loginPassword" placeholder="password123">
         </div>
+        <button class="btn" onclick="handleLogin()">Se connecter</button>
     </div>
     
     <div id="appScreen" class="app-screen">
@@ -40,18 +47,51 @@
             <h1>Kazaé</h1>
             <p id="userGreeting">Connecté ✅</p>
         </div>
-        <div class="app-content">
-            <p id="displayEmail"></p>
-            <button onclick="handleLogout()" style="margin-top:20px;width:100%;padding:10px;background:#FF6B6B;color:#fff;border:0;border-radius:8px;cursor:pointer">Se déconnecter</button>
-        </div>
+        <p id="displayEmail" style="margin: 20px 0;"></p>
+        <button class="btn" onclick="handleLogout()" style="background: #FF6B6B;">Se déconnecter</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
 
     <script>
-        const firebaseConfig={apiKey:"AIzaSyCkNjYPaqIEEUDOEcFdBWcssShAqsXdA-Q",authDomain:"kazae-44515.firebaseapp.com",projectId:"kazae-44515",storageBucket:"kazae-44515.firebasestorage.app",messagingSenderId:"358690912309",appId:"1:358690912309:web:86ed1a8129f371fd80197c"};firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore();let currentUser=null;window.addEventListener('load',()=>{setTimeout(()=>{document.getElementById('splash').classList.add('hidden');document.getElementById('authScreen').classList.add('active')},2000);auth.onAuthStateChanged(user=>{if(user){currentUser=user;showAppScreen()}})});async function handleLogin(){const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;if(!email||!password){showError('Remplissez tous les champs');return}try{await auth.signInWithEmailAndPassword(email,password);currentUser=auth.currentUser;showAppScreen()}catch(error){showError('Email ou mot de passe incorrect')}}async function handleLogout(){auth.signOut();currentUser=null;document.getElementById('appScreen').classList.remove('active');document.getElementById('authScreen').classList.add('active')}function showAppScreen(){document.getElementById('authScreen').classList.remove('active');document.getElementById('appScreen').classList.add('active');currentUser&&(document.getElementById('displayEmail').textContent='Email: '+currentUser.email)}function showError(msg){const e=document.getElementById('errorMsg');e.textContent=msg;e.classList.add('show')}
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkNjYPaqIEEUDOEcFdBWcssShAqsXdA-Q",
+            authDomain: "kazae-44515.firebaseapp.com",
+            projectId: "kazae-44515",
+            storageBucket: "kazae-44515.firebasestorage.app",
+            messagingSenderId: "358690912309",
+            appId: "1:358690912309:web:86ed1a8129f371fd80197c"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('splash').classList.add('hidden');
+                document.getElementById('authScreen').classList.add('active');
+            }, 2000);
+        });
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(user => {
+                    document.getElementById('authScreen').classList.remove('active');
+                    document.getElementById('appScreen').classList.add('active');
+                    document.getElementById('displayEmail').textContent = 'Email: ' + email;
+                })
+                .catch(error => alert('Erreur: ' + error.message));
+        }
+
+        function handleLogout() {
+            auth.signOut();
+            document.getElementById('appScreen').classList.remove('active');
+            document.getElementById('authScreen').classList.add('active');
+        }
     </script>
 </body>
 </html>
