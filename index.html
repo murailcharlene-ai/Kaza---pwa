@@ -4387,6 +4387,17 @@ window.addEventListener("load", () => {
         }
     }, 1000);
 });
+  async function addChild(name) {
+    if (!name) return;
+
+    const db = window._db;
+    const { collection, addDoc } = window._firestore;
+
+    await addDoc(collection(db, "children"), {
+        name: name,
+        created_at: new Date()
+    });
+}
 </script>
 </body>
 </html>
