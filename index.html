@@ -6,183 +6,165 @@
 <title>Kazaé</title>
 
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: sans-serif;
     background: linear-gradient(135deg, #5B4FFF, #7C6EFF);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
 }
-#splash {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, #5B4FFF, #7C6EFF);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-}
-#splash.hide { display: none; }
-.icon { font-size: 100px; margin-bottom: 20px; }
-.text { color: white; font-size: 36px; font-weight: bold; }
-
 .container {
     background: white;
+    padding: 30px;
     border-radius: 20px;
-    padding: 40px 30px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    max-width: 420px;
-    width: 100%;
-    display: none;
+    width: 400px;
 }
-.container.show { display: block; }
-
-h1 { text-align: center; margin-bottom: 30px; }
-
-.form-group { margin-bottom: 20px; }
-
-input {
+input, button {
     width: 100%;
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-}
-
-button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    background: #5B4FFF;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.logout { background: red; }
-
-.error {
-    background: #ffe0e0;
-    color: red;
     padding: 10px;
-    margin-bottom: 15px;
-    display: none;
+    margin: 5px 0;
 }
-.error.show { display: block; }
+.task {
+    display:flex;
+    justify-content:space-between;
+    background:#eee;
+    padding:10px;
+    margin-top:5px;
+}
 </style>
 </head>
 
 <body>
 
-<div id="splash">
-    <div class="icon">🏠</div>
-    <div class="text">Kazaé</div>
+<div id="auth" class="container">
+    <h2>Connexion</h2>
+    <input id="emailInput" placeholder="email">
+    <input id="passwordInput" type="password" placeholder="password">
+    <button onclick="login()">Connexion</button>
 </div>
 
-<div id="auth" class="container show">
-    <h1>Connexion</h1>
-    <div id="errorMsg" class="error"></div>
+<div id="app" class="container" style="display:none;">
+    <h2>Kazaé</h2>
+    <div id="user"></div>
 
-    <div class="form-group">
-        <input type="email" id="emailInput" placeholder="test@test.com">
-    </div>
+    <input id="taskInput" placeholder="Nouvelle tâche">
+    <button onclick="addTask()">Ajouter</button>
 
-    <div class="form-group">
-        <input type="password" id="passwordInput" placeholder="123456">
-    </div>
+    <div id="tasks"></div>
 
-    <button id="loginBtn">Se connecter</button>
-</div>
-
-<div id="app" class="container">
-    <h1>Kazaé ✅</h1>
-    <div id="userDisplay"></div>
-    <button class="logout" id="logoutBtn">Déconnexion</button>
+    <button onclick="logout()">Déconnexion</button>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://aspmfjmkwzwytiknqlih.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzcG1mam1rd3p3eXRpa25xbGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mzg5MDYsImV4cCI6MjA5MDExNDkwNn0.DkemPuJwddk5dTfKOSaqn7f6SNYtWD4t2zlCUWlNUOg';
+const URL = 'https://aspmfjmkwzwytiknqlih.supabase.co';
 
-setTimeout(() => {
-    document.getElementById('splash').classList.add('hide');
-}, 500);
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzcG1mam1rd3p3eXRpa25xbGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mzg5MDYsImV4cCI6MjA5MDExNDkwNn0.DkemPuJwddk5dTfKOSaqn7f6SNYtWD4t2zlCUWlNUOg';
 
-window.onload = () => {
-    const token = localStorage.getItem('token');
-    const email = localStorage.getItem('email');
+let userEmail = null;
 
-    if (token && email) {
-        showApp(email);
-    }
-};
-
-document.getElementById('loginBtn').onclick = async function() {
+// LOGIN
+async function login() {
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
 
-    if (!email || !password) {
-        showError('Remplis tous les champs');
-        return;
-    }
+    const res = await fetch(URL + '/auth/v1/token?grant_type=password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': KEY,
+            'Authorization': 'Bearer ' + KEY
+        },
+        body: JSON.stringify({ email, password })
+    });
 
-    this.disabled = true;
-    this.textContent = 'Connexion...';
+    const data = await res.json();
 
-    try {
-        const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_KEY,
-                'Authorization': 'Bearer ' + SUPABASE_KEY
-            },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        this.disabled = false;
-        this.textContent = 'Se connecter';
-
-        if (data.error) {
-            showError(data.error_description || 'Erreur login');
-            return;
-        }
-
-        localStorage.setItem('token', data.access_token);
+    if (data.access_token) {
         localStorage.setItem('email', email);
-
-        showApp(email);
-
-    } catch (e) {
-        this.disabled = false;
-        this.textContent = 'Se connecter';
-        showError('Erreur réseau');
+        userEmail = email;
+        startApp();
+    } else {
+        alert('Erreur login');
     }
-};
-
-document.getElementById('logoutBtn').onclick = () => {
-    localStorage.clear();
-    location.reload();
-};
-
-function showApp(email) {
-    document.getElementById('auth').classList.remove('show');
-    document.getElementById('app').classList.add('show');
-    document.getElementById('userDisplay').textContent = email;
 }
 
-function showError(msg) {
-    const el = document.getElementById('errorMsg');
-    el.textContent = msg;
-    el.classList.add('show');
+// START
+function startApp() {
+    document.getElementById('auth').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
 
-    setTimeout(() => el.classList.remove('show'), 4000);
+    userEmail = localStorage.getItem('email');
+    document.getElementById('user').innerText = userEmail;
+
+    loadTasks();
+}
+
+// LOAD TASKS
+async function loadTasks() {
+    const res = await fetch(URL + '/rest/v1/tasks?user_email=eq.' + userEmail, {
+        headers: {
+            'apikey': KEY,
+            'Authorization': 'Bearer ' + KEY
+        }
+    });
+
+    const data = await res.json();
+
+    const container = document.getElementById('tasks');
+    container.innerHTML = '';
+
+    data.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'task';
+        div.innerHTML = t.title + ' <button onclick="deleteTask(\'' + t.id + '\')">X</button>';
+        container.appendChild(div);
+    });
+}
+
+// ADD
+async function addTask() {
+    const title = document.getElementById('taskInput').value;
+
+    await fetch(URL + '/rest/v1/tasks', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': KEY,
+            'Authorization': 'Bearer ' + KEY
+        },
+        body: JSON.stringify({
+            title,
+            user_email: userEmail
+        })
+    });
+
+    document.getElementById('taskInput').value = '';
+    loadTasks();
+}
+
+// DELETE
+async function deleteTask(id) {
+    await fetch(URL + '/rest/v1/tasks?id=eq.' + id, {
+        method: 'DELETE',
+        headers: {
+            'apikey': KEY,
+            'Authorization': 'Bearer ' + KEY
+        }
+    });
+
+    loadTasks();
+}
+
+// LOGOUT
+function logout() {
+    localStorage.clear();
+    location.reload();
+}
+
+// AUTO LOGIN
+if (localStorage.getItem('email')) {
+    startApp();
 }
 </script>
 
