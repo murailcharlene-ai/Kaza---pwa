@@ -55,7 +55,82 @@ input, button {
 
     <button onclick="logout()">Déconnexion</button>
 </div>
+// ===== PATCH AUTO FIREBASE =====
 
+// Trouver automatiquement un champ texte
+function getTaskInput() {
+    return document.querySelector('input[type="text"], input:not([type])');
+}
+
+// Ajouter tâche (universel)
+async function addTaskUniversal() {
+    const input = getTaskInput();
+    if (!input) {
+        alert("Champ tâche introuvable");
+        return;
+    }
+
+    const title = input.value.trim();
+    if (!title) return;
+
+    const db = window._db;
+    const { collection, addDoc } = window._firestore;
+
+    await addDoc(collection(db, "tasks"), {
+        title: title,
+        created_at: new Date()
+    });
+
+    input.value = "";
+}
+
+// Charger tâches
+function loadTasksUniversal() {
+    const db = window._db;
+    const { collection, onSnapshot } = window._firestore;
+
+    // cherche automatiquement la liste
+    const list = document.getElementById('home-tasks-list') 
+              || document.querySelector('[id*="task"]')
+              || document.body;
+
+    onSnapshot(collection(db, "tasks"), (snapshot) => {
+        list.innerHTML = "";
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+
+            const div = document.createElement("div");
+            div.style = "background:#eee;margin:5px;padding:10px;border-radius:8px;";
+            div.innerText = data.title;
+
+            list.appendChild(div);
+        });
+    });
+}
+
+// Brancher automatiquement le bouton Ajouter
+function hookButtons() {
+    const buttons = document.querySelectorAll("button");
+
+    buttons.forEach(btn => {
+        if (btn.innerText.toLowerCase().includes("ajouter")) {
+            btn.onclick = addTaskUniversal;
+        }
+    });
+}
+
+// Lancer tout
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        if (window._firebaseReady) {
+            loadTasksUniversal();
+            hookButtons();
+        } else {
+            console.log("Firebase pas prêt");
+        }
+    }, 1000);
+});
 <script>
 const URL = 'https://aspmfjmkwzwytiknqlih.supabase.co';
 
