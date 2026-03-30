@@ -61,12 +61,15 @@ const URL = 'https://aspmfjmkwzwytiknqlih.supabase.co';
 
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzcG1mam1rd3p3eXRpa25xbGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mzg5MDYsImV4cCI6MjA5MDExNDkwNn0.DkemPuJwddk5dTfKOSaqn7f6SNYtWD4t2zlCUWlNUOg';
 
-let userEmail = null;
-
-// LOGIN CORRIGÉ
+// LOGIN AVEC MESSAGE CLAIR
 async function login() {
     const email = document.getElementById('emailInput').value.trim();
     const password = document.getElementById('passwordInput').value.trim();
+
+    if (!email || !password) {
+        alert("Remplis email et mot de passe");
+        return;
+    }
 
     try {
         const res = await fetch(URL + '/auth/v1/token?grant_type=password', {
@@ -84,14 +87,20 @@ async function login() {
 
         if (data.access_token) {
             localStorage.setItem('email', email);
-            userEmail = email;
             startApp();
         } else {
-            alert(data.error_description || data.error || 'Erreur login');
+            // MESSAGE CLAIR
+            if (data.error === "invalid_grant") {
+                alert("Email ou mot de passe incorrect");
+            } else if (data.error === "email_not_confirmed") {
+                alert("Email non confirmé → désactive confirmation dans Supabase");
+            } else {
+                alert(data.error_description || data.error || "Erreur inconnue");
+            }
         }
 
     } catch (e) {
-        alert('Erreur réseau');
+        alert("Erreur réseau");
     }
 }
 
@@ -100,15 +109,17 @@ function startApp() {
     document.getElementById('auth').style.display = 'none';
     document.getElementById('app').style.display = 'block';
 
-    userEmail = localStorage.getItem('email');
-    document.getElementById('user').innerText = userEmail;
+    const email = localStorage.getItem('email');
+    document.getElementById('user').innerText = email;
 
     loadTasks();
 }
 
-// LOAD TASKS
+// LOAD
 async function loadTasks() {
-    const res = await fetch(URL + '/rest/v1/tasks?user_email=eq.' + userEmail, {
+    const email = localStorage.getItem('email');
+
+    const res = await fetch(URL + '/rest/v1/tasks?user_email=eq.' + email, {
         headers: {
             'apikey': KEY,
             'Authorization': 'Bearer ' + KEY
@@ -131,6 +142,7 @@ async function loadTasks() {
 // ADD
 async function addTask() {
     const title = document.getElementById('taskInput').value.trim();
+    const email = localStorage.getItem('email');
 
     if (!title) return;
 
@@ -141,10 +153,7 @@ async function addTask() {
             'apikey': KEY,
             'Authorization': 'Bearer ' + KEY
         },
-        body: JSON.stringify({
-            title,
-            user_email: userEmail
-        })
+        body: JSON.stringify({ title, user_email: email })
     });
 
     document.getElementById('taskInput').value = '';
