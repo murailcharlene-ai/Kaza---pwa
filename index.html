@@ -63,29 +63,35 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 let userEmail = null;
 
-// LOGIN
+// LOGIN CORRIGÉ
 async function login() {
-    const email = document.getElementById('emailInput').value;
-    const password = document.getElementById('passwordInput').value;
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
 
-    const res = await fetch(URL + '/auth/v1/token?grant_type=password', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': KEY,
-            'Authorization': 'Bearer ' + KEY
-        },
-        body: JSON.stringify({ email, password })
-    });
+    try {
+        const res = await fetch(URL + '/auth/v1/token?grant_type=password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': KEY,
+                'Authorization': 'Bearer ' + KEY
+            },
+            body: JSON.stringify({ email, password })
+        });
 
-    const data = await res.json();
+        const data = await res.json();
+        console.log(data);
 
-    if (data.access_token) {
-        localStorage.setItem('email', email);
-        userEmail = email;
-        startApp();
-    } else {
-        alert('Erreur login');
+        if (data.access_token) {
+            localStorage.setItem('email', email);
+            userEmail = email;
+            startApp();
+        } else {
+            alert(data.error_description || data.error || 'Erreur login');
+        }
+
+    } catch (e) {
+        alert('Erreur réseau');
     }
 }
 
@@ -124,7 +130,9 @@ async function loadTasks() {
 
 // ADD
 async function addTask() {
-    const title = document.getElementById('taskInput').value;
+    const title = document.getElementById('taskInput').value.trim();
+
+    if (!title) return;
 
     await fetch(URL + '/rest/v1/tasks', {
         method: 'POST',
