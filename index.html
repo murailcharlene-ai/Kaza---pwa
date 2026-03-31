@@ -4398,6 +4398,23 @@ window.addEventListener("load", () => {
         created_at: new Date()
     });
 }
+  // ===== BLOCAGE GLOBAL < 7 ANS =====
+
+// On surveille tout ce qui s'affiche
+const observer = new MutationObserver(() => {
+    const tasks = document.querySelectorAll('.task-item');
+
+    tasks.forEach(task => {
+        if (window.selectedChild && window.selectedChild.age < 7) {
+            task.style.display = "none";
+        }
+    });
+});
+
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
 </script>
 </body>
 </html>
