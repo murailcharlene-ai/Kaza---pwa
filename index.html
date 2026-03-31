@@ -4415,6 +4415,67 @@ observer.observe(document.body, {
     childList: true,
     subtree: true
 });
+  // ===== PATCH AUTO GLOBAL =====
+
+// Intercepte toutes les créations de tâches
+(function () {
+    const originalAddDoc = window._firestore.addDoc;
+    const { getDocs, query, where, collection } = window._firestore;
+
+    window._firestore.addDoc = async function (ref, data) {
+        try {
+            // 🔒 uniquement pour assignedTasks
+            if (ref._path?.segments?.includes("assignedTasks")) {
+
+                const childId = data.childId;
+                const title = data.title;
+
+                if (!childId || !title) return;
+
+                const db = window._db;
+
+                // récupérer enfant
+                const childSnap = await getDocs(query(
+                    collection(db, "children"),
+                    where("__name__", "==", childId)
+                ));
+
+                if (childSnap.empty) return;
+
+                const child = childSnap.docs[0].data();
+
+                // 🔒 règle âge
+                if (child.age < 7) {
+                    console.log("⛔ bloqué < 7 ans");
+                    return;
+                }
+
+                const today = new Date().toISOString().split('T')[0];
+
+                // 🔒 éviter doublons
+                const existing = await getDocs(query(
+                    collection(db, "assignedTasks"),
+                    where("childId", "==", childId),
+                    where("title", "==", title),
+                    where("date", "==", today)
+                ));
+
+                if (!existing.empty) {
+                    console.log("⚠️ doublon évité");
+                    return;
+                }
+
+                data.date = today;
+            }
+
+            return await originalAddDoc(ref, data);
+
+        } catch (e) {
+            console.error("Erreur patch :", e);
+            return;
+        }
+    };
+})();
 </script>
 </body>
 </html>
